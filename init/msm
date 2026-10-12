@@ -823,7 +823,7 @@ server_log_get_line() {
 			RETURN="${BASH_REMATCH[1]}"
 			return 0
 		fi
-	done < <(as_user "${SERVER_USERNAME[$1]}" "tail --pid=$$ --follow=name --retry --lines=20 --sleep-interval=0.1 \"${SERVER_LOG_PATH[$1]}\" 2>/dev/null")
+	done < <(as_user "${SERVER_USERNAME[$1]}" "timeout $(( $4 + 5 )) tail --pid=$$ --follow=name --retry --lines=20 --sleep-interval=0.1 \"${SERVER_LOG_PATH[$1]}\" 2>/dev/null")
 }
 
 # The same as server_log_get_line, but prints a dot instead of the log line
@@ -859,7 +859,7 @@ server_log_dots_for_lines() {
 				return 0
 			fi
 		fi
-	done < <(as_user "${SERVER_USERNAME[$1]}" "tail --pid=$$ --follow=name --retry --lines=100 --sleep-interval=0.1 \"${SERVER_LOG_PATH[$1]}\" 2>/dev/null")
+	done < <(as_user "${SERVER_USERNAME[$1]}" "timeout $(( $4 + 5 )) tail --pid=$$ --follow=name --retry --lines=100 --sleep-interval=0.1 \"${SERVER_LOG_PATH[$1]}\" 2>/dev/null")
 }
 
 # Sends as string to a server for execution
@@ -1879,6 +1879,11 @@ read_server_conf(){
 	fi
 
 	local from_conf="$(sed -rn "s/^$name=('|\"|)(.*)\1/\2/ip" "${SERVER_CONF[$1]}" | tail -n 1)"
+
+	# The Minecraft server rewrites server.properties in Java properties
+	# format, which escapes ':' and '=' (e.g. -XX\:+UseG1GC). Undo that,
+	# otherwise values such as the invocation no longer match the process list.
+	from_conf="$(printf '%s' "$from_conf" | sed -e 's/\\\([:=#!]\)/\1/g' -e 's/\\\\/\\/g')"
 
 	if [ ! -z "$from_conf" ]; then
 		# If the value is found in the server conf file (server.properties)
