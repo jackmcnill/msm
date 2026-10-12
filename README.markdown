@@ -1,5 +1,92 @@
 # Minecraft Server Manager
 
+🇩🇪 Deutsch | 🇬🇧 [English version below](#minecraft-server-manager-1)
+
+Ein einzelnes Init-Skript, das den Betrieb mehrerer Minecraft-/Bukkit-Server für uns Admins einfacher macht.
+
+## Installation
+
+Unterstützt werden aktuelle Versionen von Debian/Ubuntu, Fedora/RHEL (Rocky, AlmaLinux, ...) und Arch Linux, jeweils mit systemd.
+Die alten git.io-Einzeiler verweisen auf das nicht mehr gepflegte Upstream-Projekt und funktionieren nicht mehr.
+
+Dieses Repository auf den Server kopieren (oder dort klonen) und als root oder mit sudo ausführen:
+
+    ./installers/install.sh
+
+Der Installer richtet die Abhängigkeiten ein (screen, jq, rsync, zip, wget, cron und das neueste verfügbare OpenJDK aus 25/21/17),
+legt den Benutzer `minecraft` an und installiert `/usr/local/bin/msm` (mit `/etc/init.d/msm` als Symlink),
+die Cron-Jobs und die systemd-Unit `msm.service`. Eine vorhandene `/etc/msm.conf` bleibt unverändert.
+
+Direkt vom Fork installieren, ohne Kopieren:
+
+    export MSM_UPDATE_URL=https://raw.githubusercontent.com/jackmcnill/msm/master
+    bash <(curl -fsSL $MSM_UPDATE_URL/installers/install.sh)
+
+Optionale Umgebungsvariablen: `MSM_UPDATE_URL` (Raw-URL der eigenen gehosteten Kopie; aktiviert `msm update`, leer = deaktiviert),
+`MSM_DIR`, `MSM_USER`, `MSM_JAVA_VERSIONS` (z. B. `"21 17"`), `MSM_NONINTERACTIVE=1`.
+
+Oder [schlage eine neue Plattform vor][issues].
+
+## Erste Schritte
+
+* Siehe oben, um MSM auf dem eigenen Server zu installieren.
+* In der [Dokumentation][docs] gibt es Hilfe für den Einstieg.
+* Fork das Projekt und steuere eigene Änderungen bei.
+* Kein Programmierer? [Eröffne ein Issue][issues] mit deiner Idee für MSM.
+* Im [Changelog][changelog] steht, wie sich MSM über die Zeit entwickelt hat.
+
+MSM steht unter der GPLv3-Lizenz, die dem Repository [beiliegt][licence]. Bei Lizenzfragen bin ich für Vorschläge offen.
+
+## Funktionen
+
+Neben Starten, Stoppen und Neustarten kann MSM Folgendes:
+
+* Ein Skript verwaltet mehrere Server; zwei oder mehr Server laufen auf einer Maschine.
+* Neue Server lassen sich mit einem einzigen Befehl anlegen und starten, die Jars werden automatisch heruntergeladen.
+* Erstellt regelmäßig Backups deiner Welten, die mit [WorldEdit-Snapshots][we-snapshot] kompatibel sind.
+* Sichert das gesamte Serververzeichnis für vollständigen Schutz.
+* Lädt Welten zur schnelleren Verarbeitung in den RAM (weniger Lag).
+* Leicht konfigurierbare globale Standardwerte, bei Bedarf mit Überschreibungen pro Server.
+* Serverbefehle auf einen, mehrere oder alle Server gleichzeitig anwenden (praktisch, um einen Spieler auf allen Servern auf die Whitelist zu setzen).
+* Tab-Vervollständigung für alle Befehle; das macht alles schneller und den Einstieg leicht.
+* Hält die Server-Logs durch regelmäßiges „Rollen“ übersichtlich.
+* Ordnet Jar-Dateien in Gruppen (z. B. minecraft und craftbukkit) und verknüpft jeden Server mit genau einem Jar. Neue Versionen werden automatisch heruntergeladen.
+* Viele Ingame-Befehle (whitelist, blacklist, operator, gamemode, kick, say, time, toggledownfall, save).
+* Befehle direkt von der Kommandozeile an den Server senden.
+
+## Support
+
+1. Wenn du ein Problem mit MSM findest, das eine Codeänderung erfordert, [eröffne ein Issue][issues] auf GitHub.
+
+## Geplante Funktionen
+
+* **QuickBackup:** Wenn die Backups nicht lokal liegen (z. B. auf einem NAS), erstellt QuickBackup optional zuerst ein lokales Backup für mehr Geschwindigkeit und verschiebt es, sobald die Spieler wieder bauen. Erste Tests zeigen: Ein Netzwerk-Backup von 54 Sekunden schrumpft auf 23 Sekunden Ingame-Zeit.
+* **Restore:** Automatisches Zurückspielen einer alten Welt oder eines kompletten Server-Backups.
+
+## Versionierung
+
+MSM verwendet semantische Versionsnummern, damit klar ist, welcher Code installiert ist und wann Änderungen nicht abwärtskompatibel sind.
+
+Releases werden im folgenden Format nummeriert:
+
+`<major>.<minor>.<patch>`
+
+Und nach diesen Regeln vergeben:
+
+* Bricht eine Änderung die Abwärtskompatibilität, steigt die Major-Nummer (Minor und Patch beginnen wieder bei 0).
+* Neue Funktionen ohne Bruch der Abwärtskompatibilität erhöhen die Minor-Nummer (Patch beginnt wieder bei 0).
+* Fehlerbehebungen und sonstige Änderungen erhöhen die Patch-Nummer.
+
+Mehr zu SemVer steht auf http://semver.org/.
+
+## Danksagung
+
+Dieser Code ist aus einer alten Version von [Ahtenus' Minecraft Init Script][ahtenus-minecraft-init] hervorgegangen.
+
+---
+
+# Minecraft Server Manager
+
 A single init script which makes running multiple Minecraft/Bukkit servers easier for us admins.
 
 ## Installation
