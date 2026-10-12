@@ -6,6 +6,15 @@ Visit https://github.com/msmhq/msm for more information.
 Change Log
 ----------
 
+### 0.12.0
+
+* Installers rewritten for current distributions: OS detection via `/etc/os-release`, dnf, EPEL fallback for `screen`, newest available OpenJDK (25/21/17), cron installed and enabled, systemd as the default startup mechanism (SysV only as fallback)
+* Installers work from a local checkout; `UPDATE_URL` is empty by default, so `msm update` no longer reverts to the unmaintained upstream
+* `/usr/local/bin/msm` is a real file (`/etc/init.d/msm` is a symlink to it); cron jobs use it
+* Fix inverted "system account" prompt when creating the user; existing user and existing `/etc/msm.conf` are kept
+* Use `command -v` instead of `which` (missing on minimal Fedora/Debian installs)
+* systemd units wait for `network-online.target` and allow long start/stop
+
 ### [0.11.0](https://github.com/msmhq/msm/compare/0.10.1...0.11.0)
 
 * Very minor - clean up extraneous whitespace by @Next-Door-Tech in [#431][#431]

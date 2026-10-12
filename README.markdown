@@ -2,15 +2,21 @@
 
 A single init script which makes running multiple Minecraft/Bukkit servers easier for us admins.
 
-## Quick Installers
+## Installation
 
-Install MSM on a **debian box**:
+Supported: current Debian/Ubuntu, Fedora/RHEL (Rocky, AlmaLinux, ...) and Arch Linux, all with systemd.
+The old git.io one-liners point to the unmaintained upstream and no longer work.
 
-    wget -q http://git.io/Sxpr9g -O /tmp/msm && bash /tmp/msm
+Copy this repository to the server (or clone it there) and run, as root or with sudo:
 
-Or install MSM under **RedHat**:
+    ./installers/install.sh
 
-	wget -q http://git.io/lu0ULA -O /tmp/msm && bash /tmp/msm
+This installs the dependencies (screen, jq, rsync, zip, wget, cron and the newest available OpenJDK of 25/21/17),
+creates the `minecraft` user, installs `/usr/local/bin/msm` (with `/etc/init.d/msm` as a symlink),
+the cron jobs and the systemd unit `msm.service`. An existing `/etc/msm.conf` is kept.
+
+Optional environment variables: `MSM_UPDATE_URL` (raw URL of your hosted copy; enables `msm update`, empty = disabled),
+`MSM_DIR`, `MSM_USER`, `MSM_JAVA_VERSIONS` (e.g. `"21 17"`), `MSM_NONINTERACTIVE=1`.
 
 Or [suggest a new platform][issues].
 

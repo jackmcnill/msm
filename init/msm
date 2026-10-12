@@ -28,7 +28,7 @@
 
 
 # The Minecraft Server Manager version, use "msm version" to check yours.
-VERSION="0.11.0"
+VERSION="0.12.0"
 
 # Source, if it exists, the msm profile.d script
 if [ -f "/etc/profile.d/msm.sh" ]; then
@@ -1107,7 +1107,7 @@ jargroup_getlatest() {
                     fi
 
                     # Check if jq is installed on the local computer
-                    as_user "$SETTINGS_USERNAME" "which jq > /dev/null"
+                    as_user "$SETTINGS_USERNAME" "command -v jq > /dev/null"
                     if [[ "$?" != "0" ]]; then
                         echo "jq is required to download server updates. Please ensure it is installed and the path is set correctly."
                         return 1
@@ -1415,7 +1415,7 @@ server_start() {
 	if server_is_running "$1"; then
 		echo "Server \"${SERVER_NAME[$1]}\" is already running!"
 	else
-		if ! which java > /dev/null; then
+		if ! command -v java > /dev/null 2>&1; then
 			error_exit JAVA_NOT_INSTALLED "Could not start server as Java is not installed."
 		fi
 		server_ensure_jar "$1"
@@ -2176,6 +2176,13 @@ command_config() {
 
 # Downloads latest versions of all MSM files
 command_update() {
+	manager_property UPDATE_URL
+	if [[ -z "$SETTINGS_UPDATE_URL" ]]; then
+		echo "No UPDATE_URL is configured in $CONF, so MSM cannot update itself."
+		echo "Set UPDATE_URL to the raw URL of your copy of the MSM repository, or re-run the installer."
+		return 1
+	fi
+
 	echo -n "Checking for updates to version ${VERSION}..."
 
 	local any_files_updated="false"
@@ -3225,7 +3232,7 @@ register_settings() {
 	register_setting RDIFF_BACKUP_ROTATION "7"
 
 
-	register_setting UPDATE_URL "https://raw.githubusercontent.com/msmhq/msm/latest"
+	register_setting UPDATE_URL ""
 
 	register_setting WORLD_ARCHIVE_PATH "/opt/msm/archives/worlds"
 	register_setting LOG_ARCHIVE_PATH "/opt/msm/archives/logs"

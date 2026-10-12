@@ -1,46 +1,36 @@
-UPDATE_URL="https://raw.githubusercontent.com/msmhq/msm/master"
-curl -L "${UPDATE_URL}/installers/common.sh" -o /tmp/msmcommon.sh  # wget isn't installed on Arch by default
-source /tmp/msmcommon.sh && rm -f /tmp/msmcommon.sh
+#!/bin/bash
+# Installer for Arch Linux and derivatives
 
-# Installs sudo if it is not installed
-function install_sudo() {
-    pacman --noconfirm -S sudo
-}
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 function update_system_packages() {
-    install_log "Updating sources"
-    sudo pacman --noconfirm -Syy || install_error "Couldn't update packages"
+    install_log "Upgrading system (Arch does not support partial upgrades)"
+    $SUDO pacman --noconfirm -Syu || install_error "Couldn't upgrade the system"
+}
+
+# Installs the newest available OpenJDK headless runtime from JAVA_CANDIDATES
+function install_java() {
+    if command -v java > /dev/null 2>&1; then
+        check_java_version
+        return
+    fi
+
+    local v
+    for v in $JAVA_CANDIDATES; do
+        if pacman -Si "jre${v}-openjdk-headless" >/dev/null 2>&1; then
+            install_log "Installing Java (OpenJDK ${v})"
+            $SUDO pacman --noconfirm -S --needed "jre${v}-openjdk-headless" || install_error "Couldn't install Java"
+            return
+        fi
+    done
+    install_error "No OpenJDK package (${JAVA_CANDIDATES}) found. Install Java manually and re-run."
 }
 
 function install_dependencies() {
     install_log "Installing required packages"
-    sudo pacman --noconfirm -S jq rsync screen wget zip || install_error "Couldn't install dependencies"
-    if ! command -v java > /dev/null 2>&1; then
-        install_log "Installing Java (OpenJDK 17)"
-        sudo pacman --noconfirm -S jre17-openjdk-headless || install_error "Couldn't install Java"
-    fi
-}
-
-function enable_init() {
-    install_log "Installing systemd service unit"
-    sudo wget ${UPDATE_URL}/init/msm.service \
-        -O /etc/systemd/system/msm.service
-
-    install_log "Enabling automatic startup and shutdown"
-    sudo systemctl enable msm.service
-}
-
-# Verifies existence and permissions of msm server directory (default /opt/msm)
-function create_msm_directories() {
-    install_log "Creating MSM directories"
-    if [ ! -d "$msm_dir" ]; then
-        sudo mkdir -p "$msm_dir" || install_error "Couldn't create directory '$msm_dir'"
-    fi
-    sudo chown -R $msm_user:$msm_user "$msm_dir" || install_error "Couldn't change file ownership for '$msm_dir'"
-
-    if [ ! -d "/etc/init.d" ]; then
-        sudo mkdir -p "/etc/init.d/" || install_error "Couldn't create directory '/etc/init.d'"
-    fi
+    $SUDO pacman --noconfirm -S --needed jq rsync screen wget zip cronie procps-ng util-linux diffutils findutils \
+        || install_error "Couldn't install dependencies"
+    install_java
 }
 
 install_msm
